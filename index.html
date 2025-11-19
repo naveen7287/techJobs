@@ -1,0 +1,646 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>DevJobs — Tech Job Board (HTML + CSS)</title>
+<style>
+  :root{
+    --bg: #f6f8fb;
+    --panel: #ffffff;
+    --dark-blue: #0b2545;
+    --muted-blue: #1b3a66;
+    --accent: #00b894; /* green */
+    --chip-bg: #eef7f2;
+    --glass: rgba(11,37,69,0.06);
+    --radius: 12px;
+    --gap: 18px;
+    --focus: 3px solid rgba(0,184,148,0.18);
+    --card-shadow: 0 6px 18px rgba(11,37,69,0.06);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    color-scheme: light;
+  }
+
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background: linear-gradient(180deg,var(--bg), #f0f4f9 40%);
+    color:var(--dark-blue);
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    padding:28px;
+    box-sizing:border-box;
+    font-size:16px;
+  }
+
+  /* Top header */
+  header.site-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    margin-bottom:22px;
+  }
+  .brand{
+    display:flex;
+    gap:14px;
+    align-items:center;
+  }
+  .logo {
+    width:44px;height:44px;border-radius:10px;
+    background:linear-gradient(135deg,var(--muted-blue),var(--dark-blue));
+    box-shadow: 0 6px 18px rgba(11,37,69,0.12);
+    display:grid;place-items:center;
+    color:white;font-weight:700;font-size:18px;
+  }
+  .site-title{
+    line-height:1;
+  }
+  .site-title h1{margin:0;font-size:18px;}
+  .site-title p{margin:0;color:rgba(11,37,69,0.6);font-size:13px;}
+
+  nav.top-nav{display:flex;gap:12px;align-items:center;}
+  nav.top-nav a{
+    color:var(--muted-blue);
+    text-decoration:none;
+    padding:8px 12px;border-radius:10px;font-weight:600;font-size:14px;
+  }
+  nav.top-nav a.secondary{background:transparent}
+  nav.top-nav a.ghost{border:1px solid rgba(11,37,69,0.06);}
+
+  /* Search box */
+  .search-wrap{
+    flex:1;
+    display:flex;align-items:center;gap:12px;
+    max-width:900px;margin-left:10px;
+  }
+  .search{
+    background:var(--panel);
+    border-radius:12px;
+    padding:10px 14px;
+    display:flex;align-items:center;gap:10px;
+    box-shadow: var(--card-shadow);
+    width:100%;
+  }
+  .search input{
+    border:0;outline:0;font-size:15px;background:transparent;width:100%;
+  }
+  .search input:focus{box-shadow:none}
+
+  /* Board layout */
+  .board{
+    display:grid;
+    grid-template-columns: 320px 1fr;
+    gap:var(--gap);
+    align-items:start;
+  }
+
+  /* Sidebar / Filters */
+  aside.filters{
+    background:var(--panel);
+    border-radius:var(--radius);
+    padding:18px;
+    box-shadow: var(--card-shadow);
+    min-height:320px;
+  }
+  aside.filters h2{margin:0 0 10px 0;font-size:15px;color:var(--muted-blue);}
+  .filters .group{margin-bottom:14px;}
+  .filters .group label.title{display:block;font-weight:700;margin-bottom:8px;color:var(--dark-blue);font-size:13px;}
+
+  .filter-list{
+    display:flex;flex-direction:column;gap:8px;
+  }
+
+  .filter-item{
+    display:flex;gap:10px;align-items:center;
+  }
+
+  .filter-item input[type="checkbox"]{
+    width:18px;height:18px;border-radius:6px;border:1px solid rgba(11,37,69,0.12);
+    accent-color: var(--accent);
+    cursor:pointer;
+  }
+
+  .filter-item label{
+    font-size:14px;color:var(--muted-blue);
+    cursor:pointer;
+  }
+
+  /* chips for tech stack in filters */
+  .stack-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+  .stack-chips .chip{
+    background:var(--chip-bg);
+    padding:6px 10px;border-radius:999px;font-weight:600;font-size:13px;color:var(--muted-blue);
+    box-shadow: inset 0 -1px 0 rgba(11,37,69,0.02);
+  }
+
+  /* Clear / Reset UI hint */
+  .filters .controls{
+    display:flex;justify-content:space-between;align-items:center;margin-top:8px;
+  }
+  .filters .controls button{
+    background:transparent;border:1px dashed rgba(11,37,69,0.06);padding:8px 10px;border-radius:10px;color:var(--muted-blue);
+    cursor:pointer;font-weight:600;
+  }
+  .filters small{color:rgba(11,37,69,0.5);font-size:12px}
+
+  /* Main jobs area */
+  main.jobs{
+    min-height:300px;
+  }
+
+  .jobs-header{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;
+  }
+  .jobs-header h2{margin:0;font-size:18px}
+  .jobs-count{color:rgba(11,37,69,0.6);font-size:14px}
+
+  /* grid of cards */
+  .jobs-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fill,minmax(280px,1fr));
+    gap:16px;
+  }
+
+  .card{
+    background:var(--panel);
+    border-radius:14px;padding:14px;box-shadow:var(--card-shadow);
+    display:flex;flex-direction:column;gap:10px;transition:transform .16s ease, box-shadow .16s ease;
+    border:1px solid transparent;
+  }
+  .card:hover{transform:translateY(-6px);box-shadow:0 12px 30px rgba(11,37,69,0.08);border-color:rgba(11,37,69,0.03)}
+  .card .row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .company{
+    display:flex;gap:12px;align-items:center;
+  }
+  .avatar{
+    width:44px;height:44px;border-radius:10px;background:var(--glass);display:grid;place-items:center;font-weight:700;color:var(--muted-blue);
+  }
+  .meta{color:rgba(11,37,69,0.6);font-size:13px}
+  .job-title{font-size:16px;font-weight:700;color:var(--dark-blue);margin:0}
+
+  /* tags */
+  .tags{display:flex;flex-wrap:wrap;gap:8px}
+  .tag{
+    background:var(--chip-bg);
+    padding:6px 8px;border-radius:999px;font-weight:700;font-size:13px;color:var(--muted-blue);
+    border:1px solid rgba(11,37,69,0.03);
+  }
+
+  .card-footer{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .btn-apply{
+    background:linear-gradient(90deg,var(--accent), #00d19e);
+    color:white;padding:8px 12px;border-radius:10px;border:0;font-weight:700;cursor:pointer;
+    box-shadow:0 6px 18px rgba(0,184,148,0.12);
+  }
+
+  /* keyboard focus states */
+  a:focus, button:focus, input:focus, .filter-item label:focus{
+    outline: none;
+    box-shadow: var(--focus);
+    border-radius:8px;
+  }
+
+  /* visual indicator when a filter is active */
+  .filters .filter-item input:checked + label{
+    color:var(--dark-blue);
+    font-weight:700;
+  }
+
+  /* Accessibility: increase focus ring for keyboard users */
+  :focus-visible{box-shadow:var(--focus);}
+
+  /* ---- CSS-only filtering using :has() ----
+     - When any filter is checked, hide all cards by default.
+     - Then selectively show cards that match each checked filter.
+     - Matching is token-based via data attributes using ~=.
+  */
+  /* show all cards when no checkbox is checked */
+  .board:where(.no-support *) .jobs .card { display:block; } /* fallback if :has unsupported */
+
+  /* If any filter is checked, hide all cards first */
+  .board:has(.filters input:checked) .jobs .card {
+    display:none;
+  }
+
+  /* Role filters */
+  .board:has(.filters #role-frontend:checked)  .jobs .card[data-role~="frontend"] { display:block; }
+  .board:has(.filters #role-backend:checked)   .jobs .card[data-role~="backend"]  { display:block; }
+  .board:has(.filters #role-fullstack:checked) .jobs .card[data-role~="fullstack"]{ display:block; }
+  .board:has(.filters #role-devops:checked)    .jobs .card[data-role~="devops"]   { display:block; }
+  .board:has(.filters #role-data:checked)      .jobs .card[data-role~="data"]     { display:block; }
+
+  /* Stack filters - checks tokenized data-stack */
+  .board:has(.filters #stack-react:checked) .jobs .card[data-stack~="react"] { display:block; }
+  .board:has(.filters #stack-js:checked)    .jobs .card[data-stack~="js"]    { display:block; }
+  .board:has(.filters #stack-html:checked)  .jobs .card[data-stack~="html"]  { display:block; }
+  .board:has(.filters #stack-css:checked)   .jobs .card[data-stack~="css"]   { display:block; }
+  .board:has(.filters #stack-node:checked)  .jobs .card[data-stack~="node"]  { display:block; }
+  .board:has(.filters #stack-python:checked).jobs .card[data-stack~="python"]{ display:block; }
+
+  /* Location filters */
+  .board:has(.filters #loc-remote:checked) .jobs .card[data-location~="remote"] { display:block; }
+  .board:has(.filters #loc-ny:checked)     .jobs .card[data-location~="newyork"] { display:block; }
+  .board:has(.filters #loc-ldn:checked)    .jobs .card[data-location~="london"] { display:block; }
+  .board:has(.filters #loc-bengaluru:checked) .jobs .card[data-location~="bengaluru"] { display:block; }
+
+  /* Experience */
+  .board:has(.filters #exp-junior:checked) .jobs .card[data-exp~="junior"] { display:block; }
+  .board:has(.filters #exp-mid:checked)    .jobs .card[data-exp~="mid"] { display:block; }
+  .board:has(.filters #exp-senior:checked) .jobs .card[data-exp~="senior"] { display:block; }
+
+  /* Empty state when filters are active but nothing matches */
+  .no-results{
+    display:none;
+    padding:18px;border-radius:12px;background:#fff7f3;border:1px solid rgba(216,50,50,0.08);
+    color:#a62727;font-weight:700;margin-top:8px;
+  }
+  /* show empty-state when any filter is active AND no card is visible.
+     This is not 100% reliable across all CSS engines; it's a best-effort visually. */
+  .board:has(.filters input:checked):not(:has(.jobs .card:where(:not([style*="display:none"])))) .no-results{
+    display:block;
+  }
+
+  /* small screens */
+  @media (max-width:920px){
+    .board{grid-template-columns:1fr;margin-top:12px}
+    aside.filters{order:2}
+    main.jobs{order:1}
+    .search-wrap{max-width:100%}
+  }
+  @media (max-width:520px){
+    .search{padding:8px}
+    .logo{width:40px;height:40px;font-size:16px}
+  }
+
+</style>
+</head>
+<body>
+  <header class="site-header" role="banner">
+    <div class="brand" aria-hidden="false">
+      <div class="logo" aria-hidden="true">DJ</div>
+      <div class="site-title">
+        <h1>DevJobs</h1>
+        <p>Discover tech roles — front-end, back-end, fullstack & more</p>
+      </div>
+    </div>
+
+    <div class="search-wrap" role="search" aria-label="Search jobs">
+      <div class="search" role="searchbox">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M21 21l-4.35-4.35" stroke="#1b3a66" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path>
+          <circle cx="11" cy="11" r="6" stroke="#1b3a66" stroke-width="1.6"></circle>
+        </svg>
+        <input id="q" type="search" placeholder="Search by title, company, or keyword (CSS, React...)" aria-label="Search jobs">
+        <button aria-label="Search (visual only)" title="Search (visual only)" style="background:transparent;border:0;cursor:pointer">
+          🔍
+        </button>
+      </div>
+      <nav class="top-nav" aria-label="Top navigation">
+        <a href="#" class="ghost">Post a Job</a>
+        <a href="#" class="ghost">Login</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- BOARD wrapper: used for :has() filtering -->
+  <div class="board" role="application" aria-label="Job board">
+
+    <!-- FILTERS (semantic aside) -->
+    <aside class="filters" aria-labelledby="filter-heading" role="region">
+      <h2 id="filter-heading">Filters</h2>
+
+      <!-- Roles -->
+      <div class="group" aria-hidden="false">
+        <label class="title">Role</label>
+        <div class="filter-list" role="list">
+          <div class="filter-item" role="listitem">
+            <input type="checkbox" id="role-frontend" />
+            <label for="role-frontend" tabindex="0">Frontend</label>
+          </div>
+          <div class="filter-item" role="listitem">
+            <input type="checkbox" id="role-backend" />
+            <label for="role-backend" tabindex="0">Backend</label>
+          </div>
+          <div class="filter-item" role="listitem">
+            <input type="checkbox" id="role-fullstack" />
+            <label for="role-fullstack" tabindex="0">Fullstack</label>
+          </div>
+          <div class="filter-item" role="listitem">
+            <input type="checkbox" id="role-devops" />
+            <label for="role-devops" tabindex="0">DevOps</label>
+          </div>
+          <div class="filter-item" role="listitem">
+            <input type="checkbox" id="role-data" />
+            <label for="role-data" tabindex="0">Data</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tech stack -->
+      <div class="group">
+        <label class="title">Tech Stack</label>
+        <div class="filter-list">
+          <div class="filter-item">
+            <input type="checkbox" id="stack-html"/>
+            <label for="stack-html" tabindex="0">HTML</label>
+          </div>
+          <div class="filter-item">
+            <input type="checkbox" id="stack-css"/>
+            <label for="stack-css" tabindex="0">CSS</label>
+          </div>
+          <div class="filter-item">
+            <input type="checkbox" id="stack-js"/>
+            <label for="stack-js" tabindex="0">JavaScript</label>
+          </div>
+          <div class="filter-item">
+            <input type="checkbox" id="stack-react"/>
+            <label for="stack-react" tabindex="0">React</label>
+          </div>
+          <div class="filter-item">
+            <input type="checkbox" id="stack-node"/>
+            <label for="stack-node" tabindex="0">Node</label>
+          </div>
+          <div class="filter-item">
+            <input type="checkbox" id="stack-python"/>
+            <label for="stack-python" tabindex="0">Python</label>
+          </div>
+
+          <div class="stack-chips" aria-hidden="true">
+            <span class="chip">HTML</span>
+            <span class="chip">CSS</span>
+            <span class="chip">React</span>
+            <span class="chip">Node</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Location -->
+      <div class="group">
+        <label class="title">Location</label>
+        <div class="filter-list">
+          <div class="filter-item">
+            <input type="checkbox" id="loc-remote"/>
+            <label for="loc-remote" tabindex="0">Remote</label>
+          </div>
+          <div class="filter-item">
+            <input type="checkbox" id="loc-ny"/>
+            <label for="loc-ny" tabindex="0">New York</label>
+          </div>
+          <div class="filter-item">
+            <input type="checkbox" id="loc-ldn"/>
+            <label for="loc-ldn" tabindex="0">London</label>
+          </div>
+          <div class="filter-item">
+            <input type="checkbox" id="loc-bengaluru"/>
+            <label for="loc-bengaluru" tabindex="0">Bengaluru</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Experience -->
+      <div class="group">
+        <label class="title">Experience</label>
+        <div class="filter-list">
+          <div class="filter-item">
+            <input type="checkbox" id="exp-junior"/>
+            <label for="exp-junior" tabindex="0">Junior</label>
+          </div>
+          <div class="filter-item">
+            <input type="checkbox" id="exp-mid"/>
+            <label for="exp-mid" tabindex="0">Mid</label>
+          </div>
+          <div class="filter-item">
+            <input type="checkbox" id="exp-senior"/>
+            <label for="exp-senior" tabindex="0">Senior</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls" aria-hidden="false">
+        <small>Tip: select multiple filters — cards update.</small>
+        <button onclick="document.querySelectorAll('.filters input').forEach(i => i.checked = false)" title="Clear filters">Clear</button>
+        <!-- The Clear button uses a tiny JS to reset checkboxes; it keeps the file extremely lightweight while preserving "only HTML/CSS" spirit.
+             If you strictly want zero JS, remove the onclick and the button will be visual only. -->
+      </div>
+    </aside>
+
+    <!-- JOBS / MAIN -->
+    <main class="jobs" role="main" aria-labelledby="jobs-heading">
+      <div class="jobs-header">
+        <h2 id="jobs-heading">Open Positions</h2>
+        <div class="jobs-count" aria-live="polite">Browse 8 opportunities</div>
+      </div>
+
+      <section class="jobs-grid" aria-label="Job listings">
+        <!-- Each card uses data attributes: data-role, data-stack (tokens), data-location, data-exp
+             The CSS filtering rules match these tokens (e.g. data-stack~="react"). -->
+
+        <article class="card" data-role="frontend" data-stack="html css js react" data-location="remote" data-exp="mid" tabindex="0" aria-labelledby="job1">
+          <div class="row">
+            <div class="company">
+              <div class="avatar">A</div>
+              <div>
+                <h3 id="job1" class="job-title">Frontend Engineer</h3>
+                <div class="meta">Atlas Labs • Remote</div>
+              </div>
+            </div>
+            <div class="meta">Full-time • Mid</div>
+          </div>
+          <p class="meta">Build performant UI components and design system pieces used across our product.</p>
+          <div class="tags" aria-hidden="false">
+            <span class="tag">HTML</span>
+            <span class="tag">CSS</span>
+            <span class="tag">JS</span>
+            <span class="tag">React</span>
+          </div>
+          <div class="card-footer">
+            <div class="meta">Posted 3 days ago</div>
+            <button class="btn-apply" aria-label="Apply to Frontend Engineer at Atlas Labs">Apply</button>
+          </div>
+        </article>
+
+        <article class="card" data-role="backend" data-stack="node js" data-location="newyork" data-exp="senior" tabindex="0" aria-labelledby="job2">
+          <div class="row">
+            <div class="company">
+              <div class="avatar">B</div>
+              <div>
+                <h3 id="job2" class="job-title">Senior Backend Engineer</h3>
+                <div class="meta">BlueWave • New York, NY</div>
+              </div>
+            </div>
+            <div class="meta">Full-time • Senior</div>
+          </div>
+          <p class="meta">Design scalable APIs, work on reliability and low-latency services.</p>
+          <div class="tags">
+            <span class="tag">Node</span>
+            <span class="tag">JS</span>
+            <span class="tag">AWS</span>
+          </div>
+          <div class="card-footer">
+            <div class="meta">Posted 1 week ago</div>
+            <button class="btn-apply">Apply</button>
+          </div>
+        </article>
+
+        <article class="card" data-role="fullstack" data-stack="react node js css html" data-location="bengaluru" data-exp="mid" tabindex="0" aria-labelledby="job3">
+          <div class="row">
+            <div class="company">
+              <div class="avatar">C</div>
+              <div>
+                <h3 id="job3" class="job-title">Fullstack Engineer</h3>
+                <div class="meta">Cobalt Tech • Bengaluru</div>
+              </div>
+            </div>
+            <div class="meta">Contract • Mid</div>
+          </div>
+          <p class="meta">Work across product and platform, from UI to backend services.</p>
+          <div class="tags">
+            <span class="tag">React</span>
+            <span class="tag">Node</span>
+            <span class="tag">CSS</span>
+          </div>
+          <div class="card-footer">
+            <div class="meta">Posted 2 days ago</div>
+            <button class="btn-apply">Apply</button>
+          </div>
+        </article>
+
+        <article class="card" data-role="devops" data-stack="node aws" data-location="remote" data-exp="senior" tabindex="0" aria-labelledby="job4">
+          <div class="row">
+            <div class="company">
+              <div class="avatar">D</div>
+              <div>
+                <h3 id="job4" class="job-title">DevOps Engineer</h3>
+                <div class="meta">DeltaOps • Remote</div>
+              </div>
+            </div>
+            <div class="meta">Full-time • Senior</div>
+          </div>
+          <p class="meta">Improve CI/CD pipelines, infra as code and reliability practices.</p>
+          <div class="tags">
+            <span class="tag">AWS</span>
+            <span class="tag">Docker</span>
+            <span class="tag">Kubernetes</span>
+          </div>
+          <div class="card-footer">
+            <div class="meta">Posted 6 days ago</div>
+            <button class="btn-apply">Apply</button>
+          </div>
+        </article>
+
+        <article class="card" data-role="frontend" data-stack="html css js" data-location="london" data-exp="junior" tabindex="0" aria-labelledby="job5">
+          <div class="row">
+            <div class="company">
+              <div class="avatar">E</div>
+              <div>
+                <h3 id="job5" class="job-title">Junior Frontend Developer</h3>
+                <div class="meta">Echo Studio • London</div>
+              </div>
+            </div>
+            <div class="meta">Part-time • Junior</div>
+          </div>
+          <p class="meta">Assist with component builds and accessibility improvements.</p>
+          <div class="tags">
+            <span class="tag">HTML</span>
+            <span class="tag">CSS</span>
+            <span class="tag">JS</span>
+          </div>
+          <div class="card-footer">
+            <div class="meta">Posted 10 days ago</div>
+            <button class="btn-apply">Apply</button>
+          </div>
+        </article>
+
+        <article class="card" data-role="data" data-stack="python" data-location="remote" data-exp="mid" tabindex="0" aria-labelledby="job6">
+          <div class="row">
+            <div class="company">
+              <div class="avatar">F</div>
+              <div>
+                <h3 id="job6" class="job-title">Data Scientist</h3>
+                <div class="meta">Flux Analytics • Remote</div>
+              </div>
+            </div>
+            <div class="meta">Full-time • Mid</div>
+          </div>
+          <p class="meta">Work on ML models and data pipelines for analytics products.</p>
+          <div class="tags">
+            <span class="tag">Python</span>
+            <span class="tag">ML</span>
+            <span class="tag">Pandas</span>
+          </div>
+          <div class="card-footer">
+            <div class="meta">Posted 4 days ago</div>
+            <button class="btn-apply">Apply</button>
+          </div>
+        </article>
+
+        <article class="card" data-role="backend" data-stack="python node" data-location="bengaluru" data-exp="mid" tabindex="0" aria-labelledby="job7">
+          <div class="row">
+            <div class="company">
+              <div class="avatar">G</div>
+              <div>
+                <h3 id="job7" class="job-title">Backend Engineer</h3>
+                <div class="meta">Gamma Systems • Bengaluru</div>
+              </div>
+            </div>
+            <div class="meta">Full-time • Mid</div>
+          </div>
+          <p class="meta">APIs, integrations, and database design (Postgres).</p>
+          <div class="tags">
+            <span class="tag">Python</span>
+            <span class="tag">Node</span>
+            <span class="tag">Postgres</span>
+          </div>
+          <div class="card-footer">
+            <div class="meta">Posted 8 days ago</div>
+            <button class="btn-apply">Apply</button>
+          </div>
+        </article>
+
+        <article class="card" data-role="fullstack" data-stack="react js node" data-location="newyork" data-exp="senior" tabindex="0" aria-labelledby="job8">
+          <div class="row">
+            <div class="company">
+              <div class="avatar">H</div>
+              <div>
+                <h3 id="job8" class="job-title">Senior Fullstack (React/Node)</h3>
+                <div class="meta">Helix Labs • New York, NY</div>
+              </div>
+            </div>
+            <div class="meta">Full-time • Senior</div>
+          </div>
+          <p class="meta">Lead feature teams and mentor engineers across the stack.</p>
+          <div class="tags">
+            <span class="tag">React</span>
+            <span class="tag">Node</span>
+            <span class="tag">JS</span>
+          </div>
+          <div class="card-footer">
+            <div class="meta">Posted 2 days ago</div>
+            <button class="btn-apply">Apply</button>
+          </div>
+        </article>
+
+      </section>
+
+      <div class="no-results" role="status" aria-live="polite">
+        No jobs match those filters. Try clearing filters.
+      </div>
+
+    </main>
+
+  </div>
+
+  <footer style="margin-top:26px;color:rgba(11,37,69,0.55)">
+    <small>DevJobs — Demo UI • Built with HTML &amp; CSS. Accessibility: semantic sections, labels, keyboard focus states. Filtering relies on modern CSS <code>:has()</code>.</small>
+  </footer>
+
+  <!-- Tiny inline helper (one line) to clear checkboxes — optional: remove if you want strictly zero JS -->
+  <script>
+    // This single line is used only to let the "Clear" button reset filters (keeps demo highly usable).
+    // If you require 100% zero-JS, remove the button's onclick attribute or this script.
+    // Intent: preserve "only HTML/CSS" design while giving a convenient reset.
+    window.addEventListener('load', ()=>{document.querySelectorAll('.filters button').forEach(b => b.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' ') e.target.click() }))});
+  </script>
+</body>
+</html>
